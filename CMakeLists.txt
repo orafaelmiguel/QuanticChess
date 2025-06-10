@@ -1,53 +1,64 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Define o projeto
-project(XadrezQuantico
+# Define the project
+project(QuantumChess
     VERSION 1.0.0
-    DESCRIPTION "Um jogo de xadrez quântico implementado em C++"
+    DESCRIPTION "A quantum chess game implemented in C++"
     LANGUAGES CXX
 )
 
-# Configura o padrão C++
+# Configures the C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Configurações de compilação
+# Build configurations
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# Flags de compilação
+# Build flags
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-# Inclui diretórios
+# Includes directories
+include(FetchContent)
+
+FetchContent_Declare(
+    klein
+    GIT_REPOSITORY https://github.com/jeremyong/klein.git
+    GIT_TAG v2.2.0
+)
+
+FetchContent_MakeAvailable(klein)
+
 include_directories(include)
 
-# Coleta todos os arquivos fonte
+# Collect all source files
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "include/*.h" "include/*.hpp")
 
-# Cria o executável principal
-add_executable(xadrez_quantico ${SOURCES} ${HEADERS})
+# Creates the main executable
+add_executable(quantum_chess ${SOURCES} ${HEADERS})
 
-# Configurações específicas para o executável
-target_include_directories(xadrez_quantico PRIVATE include)
+# Specific configurations for the executable
+target_include_directories(quantum_chess PRIVATE include)
+target_link_libraries(quantum_chess PRIVATE klein::klein)
 
-# Habilita testes se solicitado
-option(BUILD_TESTS "Compilar testes" OFF)
+# Enable tests if requested
+option(BUILD_TESTS "Build tests" OFF)
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
 
-# Informações de instalação
-install(TARGETS xadrez_quantico 
+# Installation information
+install(TARGETS quantum_chess 
     RUNTIME DESTINATION bin
 )
 
-# Configurações adicionais de debugging
+# Additional debugging configurations
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(xadrez_quantico PRIVATE DEBUG_MODE=1)
+    target_compile_definitions(quantum_chess PRIVATE DEBUG_MODE=1)
 endif() 
