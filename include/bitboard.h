@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 enum Square {
     A1, B1, C1, D1, E1, F1, G1, H1,
@@ -18,6 +19,27 @@ enum Piece {
     WP, WN, WB, WR, WQ, WK,
     BP, BN, BB, BR, BQ, BK
 };
+
+enum MoveType {
+    NORMAL,
+    CAPTURE,
+    EN_PASSANT,
+    CASTLE_KING,
+    CASTLE_QUEEN,
+    PROMOTION
+};
+
+struct Move {
+    Square from;
+    Square to;
+    MoveType type;
+    Piece promotion_piece;
+    
+    Move(Square f, Square t, MoveType mt = NORMAL, Piece promo = WP) 
+        : from(f), to(t), type(mt), promotion_piece(promo) {}
+};
+
+typedef std::vector<Move> MoveList;
 
 class Board {
 public:
@@ -36,6 +58,7 @@ public:
     void clear_board();
     void update_occupancy();
     Square string_to_square(const std::string& square_str);
+    void generate_pawn_moves(MoveList& move_list);
     
 private:
     char piece_to_char(Piece piece);

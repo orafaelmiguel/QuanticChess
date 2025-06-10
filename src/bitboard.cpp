@@ -88,6 +88,146 @@ void Board::update_occupancy() {
     all_pieces = white_pieces | black_pieces;
 }
 
+void Board::generate_pawn_moves(MoveList& move_list) {
+    if (side_to_move) {
+        uint64_t pawns = bitboards[WP];
+        uint64_t empty = ~all_pieces;
+        uint64_t enemy_pieces = black_pieces;
+        
+        uint64_t single_pushes = (pawns << 8) & empty;
+        uint64_t double_pushes = ((single_pushes & 0xFF0000ULL) << 8) & empty;
+        
+        uint64_t left_captures = ((pawns & 0xFEFEFEFEFEFEFEFEULL) << 7) & enemy_pieces;
+        uint64_t right_captures = ((pawns & 0x7F7F7F7F7F7F7F7FULL) << 9) & enemy_pieces;
+        
+        while (single_pushes) {
+            int to = __builtin_ctzll(single_pushes);
+            int from = to - 8;
+            if (to >= 56) {
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, WQ));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, WR));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, WB));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, WN));
+            } else {
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), NORMAL));
+            }
+            single_pushes &= single_pushes - 1;
+        }
+        
+        while (double_pushes) {
+            int to = __builtin_ctzll(double_pushes);
+            int from = to - 16;
+            move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), NORMAL));
+            double_pushes &= double_pushes - 1;
+        }
+        
+        while (left_captures) {
+            int to = __builtin_ctzll(left_captures);
+            int from = to - 7;
+            if (to >= 56) {
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, WQ));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, WR));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, WB));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, WN));
+            } else {
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), CAPTURE));
+            }
+            left_captures &= left_captures - 1;
+        }
+        
+        while (right_captures) {
+            int to = __builtin_ctzll(right_captures);
+            int from = to - 9;
+            if (to >= 56) {
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, WQ));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, WR));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, WB));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, WN));
+            } else {
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), CAPTURE));
+            }
+            right_captures &= right_captures - 1;
+        }
+        
+        if (en_passant_square != -1) {
+            uint64_t ep_pawns = pawns & ((1ULL << (en_passant_square - 7)) | (1ULL << (en_passant_square - 9)));
+            while (ep_pawns) {
+                int from = __builtin_ctzll(ep_pawns);
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(en_passant_square), EN_PASSANT));
+                ep_pawns &= ep_pawns - 1;
+            }
+        }
+    } else {
+        uint64_t pawns = bitboards[BP];
+        uint64_t empty = ~all_pieces;
+        uint64_t enemy_pieces = white_pieces;
+        
+        uint64_t single_pushes = (pawns >> 8) & empty;
+        uint64_t double_pushes = ((single_pushes & 0xFF000000000000ULL) >> 8) & empty;
+        
+        uint64_t left_captures = ((pawns & 0x7F7F7F7F7F7F7F7FULL) >> 7) & enemy_pieces;
+        uint64_t right_captures = ((pawns & 0xFEFEFEFEFEFEFEFEULL) >> 9) & enemy_pieces;
+        
+        while (single_pushes) {
+            int to = __builtin_ctzll(single_pushes);
+            int from = to + 8;
+            if (to <= 7) {
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, BQ));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, BR));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, BB));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, BN));
+            } else {
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), NORMAL));
+            }
+            single_pushes &= single_pushes - 1;
+        }
+        
+        while (double_pushes) {
+            int to = __builtin_ctzll(double_pushes);
+            int from = to + 16;
+            move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), NORMAL));
+            double_pushes &= double_pushes - 1;
+        }
+        
+        while (left_captures) {
+            int to = __builtin_ctzll(left_captures);
+            int from = to + 7;
+            if (to <= 7) {
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, BQ));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, BR));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, BB));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, BN));
+            } else {
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), CAPTURE));
+            }
+            left_captures &= left_captures - 1;
+        }
+        
+        while (right_captures) {
+            int to = __builtin_ctzll(right_captures);
+            int from = to + 9;
+            if (to <= 7) {
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, BQ));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, BR));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, BB));
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), PROMOTION, BN));
+            } else {
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), CAPTURE));
+            }
+            right_captures &= right_captures - 1;
+        }
+        
+        if (en_passant_square != -1) {
+            uint64_t ep_pawns = pawns & ((1ULL << (en_passant_square + 7)) | (1ULL << (en_passant_square + 9)));
+            while (ep_pawns) {
+                int from = __builtin_ctzll(ep_pawns);
+                move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(en_passant_square), EN_PASSANT));
+                ep_pawns &= ep_pawns - 1;
+            }
+        }
+    }
+}
+
 Square Board::string_to_square(const std::string& square_str) {
     if (square_str.length() != 2) return A1;
     

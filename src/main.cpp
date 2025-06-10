@@ -20,44 +20,74 @@ void print_bitboard(uint64_t bitboard) {
     std::cout << "  a b c d e f g h" << std::endl << std::endl;
 }
 
+std::string square_to_string(Square sq) {
+    int file = sq % 8;
+    int rank = sq / 8;
+    return std::string(1, 'a' + file) + std::string(1, '1' + rank);
+}
+
+std::string move_type_to_string(MoveType type) {
+    switch (type) {
+        case NORMAL: return "Normal";
+        case CAPTURE: return "Capture";
+        case EN_PASSANT: return "En Passant";
+        case PROMOTION: return "Promotion";
+        default: return "Unknown";
+    }
+}
+
+std::string piece_to_string(Piece piece) {
+    switch (piece) {
+        case WQ: case BQ: return "Queen";
+        case WR: case BR: return "Rook";
+        case WB: case BB: return "Bishop";
+        case WN: case BN: return "Knight";
+        default: return "";
+    }
+}
+
+void print_moves(const MoveList& moves) {
+    std::cout << "Generated " << moves.size() << " pawn moves:" << std::endl;
+    for (const auto& move : moves) {
+        std::cout << square_to_string(move.from) << " -> " 
+                  << square_to_string(move.to) << " (" 
+                  << move_type_to_string(move.type);
+        if (move.type == PROMOTION) {
+            std::cout << " to " << piece_to_string(move.promotion_piece);
+        }
+        std::cout << ")" << std::endl;
+    }
+    std::cout << std::endl;
+}
+
 int main() {
-    std::cout << "=== Quantum Chess Bitboard System ===" << std::endl << std::endl;
+    std::cout << "=== Quantum Chess Pawn Move Generation ===" << std::endl << std::endl;
     
-    Board board;
+    Board starting_board;
+    MoveList moves;
     
-    std::cout << "Starting position FEN loaded:" << std::endl;
-    std::cout << "Side to move: " << (board.side_to_move ? "White" : "Black") << std::endl;
-    std::cout << "Castling rights: " << board.castling_rights << std::endl;
-    std::cout << "En passant square: " << board.en_passant_square << std::endl << std::endl;
+    std::cout << "Testing starting position (White to move):" << std::endl;
+    starting_board.generate_pawn_moves(moves);
+    print_moves(moves);
     
-    std::cout << "White pieces bitboard:" << std::endl;
-    print_bitboard(board.white_pieces);
+    moves.clear();
+    Board en_passant_board("rnbqkbnr/pp1ppppp/8/2pP4/8/8/PPP1PPPP/RNBQKBNR w KQkq c6 0 3");
+    std::cout << "Testing en passant position:" << std::endl;
+    std::cout << "En passant square: " << en_passant_board.en_passant_square << std::endl;
+    en_passant_board.generate_pawn_moves(moves);
+    print_moves(moves);
     
-    std::cout << "Black pieces bitboard:" << std::endl;
-    print_bitboard(board.black_pieces);
+    moves.clear();
+    Board promotion_board("rnbqkbnr/ppppppPp/8/8/8/8/PPPPPPP1/RNBQKBNR w KQkq - 0 1");
+    std::cout << "Testing promotion position (White pawn on g7):" << std::endl;
+    promotion_board.generate_pawn_moves(moves);
+    print_moves(moves);
     
-    std::cout << "White pawns bitboard:" << std::endl;
-    print_bitboard(board.bitboards[WP]);
-    
-    Board custom_board("rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2");
-    std::cout << "Custom position (Sicilian Defense) loaded:" << std::endl;
-    std::cout << "En passant square: " << custom_board.en_passant_square << std::endl;
-    std::cout << "All pieces:" << std::endl;
-    print_bitboard(custom_board.all_pieces);
-    
-    GeometricState white_pawn_e4(ChessSquare::E4);
-    std::cout << "Geometric State - White pawn at e4:" << std::endl;
-    std::cout << "Position: (" << white_pawn_e4.position.x() << ", " 
-              << white_pawn_e4.position.y() << ", " 
-              << white_pawn_e4.position.z() << ")" << std::endl;
-    
-    std::cout << "Forward direction: (" << white_pawn_e4.forward_direction.x() << ", " 
-              << white_pawn_e4.forward_direction.y() << ", " 
-              << white_pawn_e4.forward_direction.z() << ")" << std::endl;
-    
-    kln::direction move_to_e5 = white_pawn_e4.get_movement_vector(ChessSquare::E5);
-    std::cout << "Movement vector to e5: (" << move_to_e5.x() << ", " 
-              << move_to_e5.y() << ", " << move_to_e5.z() << ")" << std::endl;
+    moves.clear();
+    Board black_moves_board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+    std::cout << "Testing starting position (Black to move):" << std::endl;
+    black_moves_board.generate_pawn_moves(moves);
+    print_moves(moves);
 
     return 0;
 } 
