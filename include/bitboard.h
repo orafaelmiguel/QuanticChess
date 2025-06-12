@@ -64,6 +64,7 @@ public:
     void generate_pawn_moves(MoveList& move_list);
     void generate_knight_moves(MoveList& move_list);
     void generate_king_moves(MoveList& move_list);
+    void generate_sliding_moves(MoveList& move_list);
     bool is_square_attacked(Square square, bool by_white) const;
     
 private:
