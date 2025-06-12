@@ -51,6 +51,9 @@ public:
     int en_passant_square;
     int castling_rights;
     
+    static uint64_t knight_attacks[64];
+    static uint64_t king_attacks[64];
+    
     Board();
     Board(const std::string& fen_string);
     
@@ -59,8 +62,12 @@ public:
     void update_occupancy();
     Square string_to_square(const std::string& square_str);
     void generate_pawn_moves(MoveList& move_list);
+    void generate_knight_moves(MoveList& move_list);
+    void generate_king_moves(MoveList& move_list);
+    bool is_square_attacked(Square square, bool by_white) const;
     
 private:
     char piece_to_char(Piece piece);
     Piece char_to_piece(char c);
+    static void init_attack_tables();
 }; 

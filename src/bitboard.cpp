@@ -2,9 +2,61 @@
 #include <sstream>
 #include <iostream>
 
+// Initialize static attack tables
+uint64_t Board::knight_attacks[64] = {0};
+uint64_t Board::king_attacks[64] = {0};
+
+// Knight move offsets
+const int knight_offsets[8][2] = {
+    {-2, -1}, {-2, 1}, {-1, -2}, {-1, 2},
+    {1, -2}, {1, 2}, {2, -1}, {2, 1}
+};
+
+// King move offsets
+const int king_offsets[8][2] = {
+    {-1, -1}, {-1, 0}, {-1, 1},
+    {0, -1}, {0, 1},
+    {1, -1}, {1, 0}, {1, 1}
+};
+
+void Board::init_attack_tables() {
+    // Initialize knight attack table
+    for (int square = 0; square < 64; square++) {
+        int rank = square / 8;
+        int file = square % 8;
+        
+        for (const auto& offset : knight_offsets) {
+            int new_rank = rank + offset[0];
+            int new_file = file + offset[1];
+            
+            if (new_rank >= 0 && new_rank < 8 && new_file >= 0 && new_file < 8) {
+                int target_square = new_rank * 8 + new_file;
+                knight_attacks[square] |= 1ULL << target_square;
+            }
+        }
+    }
+    
+    // Initialize king attack table
+    for (int square = 0; square < 64; square++) {
+        int rank = square / 8;
+        int file = square % 8;
+        
+        for (const auto& offset : king_offsets) {
+            int new_rank = rank + offset[0];
+            int new_file = file + offset[1];
+            
+            if (new_rank >= 0 && new_rank < 8 && new_file >= 0 && new_file < 8) {
+                int target_square = new_rank * 8 + new_file;
+                king_attacks[square] |= 1ULL << target_square;
+            }
+        }
+    }
+}
+
 Board::Board() {
     clear_board();
     load_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    init_attack_tables();
 }
 
 Board::Board(const std::string& fen_string) {
@@ -270,5 +322,111 @@ Piece Board::char_to_piece(char c) {
         case 'q': return BQ;
         case 'k': return BK;
         default: return WP;
+    }
+}
+
+void Board::generate_knight_moves(MoveList& move_list) {
+    uint64_t knights = side_to_move ? bitboards[WN] : bitboards[BN];
+    uint64_t friendly_pieces = side_to_move ? white_pieces : black_pieces;
+    uint64_t enemy_pieces = side_to_move ? black_pieces : white_pieces;
+    
+    while (knights) {
+        int from = __builtin_ctzll(knights);
+        uint64_t attacks = knight_attacks[from] & ~friendly_pieces;
+        
+        while (attacks) {
+            int to = __builtin_ctzll(attacks);
+            MoveType type = (enemy_pieces & (1ULL << to)) ? CAPTURE : NORMAL;
+            move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), type));
+            attacks &= attacks - 1;
+        }
+        
+        knights &= knights - 1;
+    }
+}
+
+bool Board::is_square_attacked(Square square, bool by_white) const {
+    uint64_t square_bit = 1ULL << square;
+    uint64_t attackers = by_white ? white_pieces : black_pieces;
+    
+    // Check pawn attacks
+    if (by_white) {
+        if ((bitboards[WP] & ((square_bit >> 7) & 0xFEFEFEFEFEFEFEFEULL)) ||
+            (bitboards[WP] & ((square_bit >> 9) & 0x7F7F7F7F7F7F7F7FULL))) {
+            return true;
+        }
+    } else {
+        if ((bitboards[BP] & ((square_bit << 7) & 0x7F7F7F7F7F7F7F7FULL)) ||
+            (bitboards[BP] & ((square_bit << 9) & 0xFEFEFEFEFEFEFEFEULL))) {
+            return true;
+        }
+    }
+    
+    // Check knight attacks
+    if (knight_attacks[square] & (by_white ? bitboards[WN] : bitboards[BN])) {
+        return true;
+    }
+    
+    // Check king attacks
+    if (king_attacks[square] & (by_white ? bitboards[WK] : bitboards[BK])) {
+        return true;
+    }
+    
+    // TODO: Add checks for other pieces (bishops, rooks, queens)
+    // This will be implemented when we add those pieces' move generation
+    
+    return false;
+}
+
+void Board::generate_king_moves(MoveList& move_list) {
+    uint64_t king = side_to_move ? bitboards[WK] : bitboards[BK];
+    uint64_t friendly_pieces = side_to_move ? white_pieces : black_pieces;
+    uint64_t enemy_pieces = side_to_move ? black_pieces : white_pieces;
+    
+    if (king) {
+        int from = __builtin_ctzll(king);
+        uint64_t attacks = king_attacks[from] & ~friendly_pieces;
+        
+        while (attacks) {
+            int to = __builtin_ctzll(attacks);
+            MoveType type = (enemy_pieces & (1ULL << to)) ? CAPTURE : NORMAL;
+            move_list.push_back(Move(static_cast<Square>(from), static_cast<Square>(to), type));
+            attacks &= attacks - 1;
+        }
+        
+        // Handle castling
+        if (side_to_move) {
+            // King-side castling
+            if ((castling_rights & 1) && // White king-side castling right
+                !(all_pieces & 0x60ULL) && // Check if squares between king and rook are empty
+                !is_square_attacked(F1, false) && // Check if F1 is not under attack
+                !is_square_attacked(G1, false)) { // Check if G1 is not under attack
+                move_list.push_back(Move(E1, G1, CASTLE_KING));
+            }
+            
+            // Queen-side castling
+            if ((castling_rights & 2) && // White queen-side castling right
+                !(all_pieces & 0x0EULL) && // Check if squares between king and rook are empty
+                !is_square_attacked(D1, false) && // Check if D1 is not under attack
+                !is_square_attacked(C1, false)) { // Check if C1 is not under attack
+                move_list.push_back(Move(E1, C1, CASTLE_QUEEN));
+            }
+        } else {
+            // King-side castling
+            if ((castling_rights & 4) && // Black king-side castling right
+                !(all_pieces & 0x6000000000000000ULL) && // Check if squares between king and rook are empty
+                !is_square_attacked(F8, true) && // Check if F8 is not under attack
+                !is_square_attacked(G8, true)) { // Check if G8 is not under attack
+                move_list.push_back(Move(E8, G8, CASTLE_KING));
+            }
+            
+            // Queen-side castling
+            if ((castling_rights & 8) && // Black queen-side castling right
+                !(all_pieces & 0x0E00000000000000ULL) && // Check if squares between king and rook are empty
+                !is_square_attacked(D8, true) && // Check if D8 is not under attack
+                !is_square_attacked(C8, true)) { // Check if C8 is not under attack
+                move_list.push_back(Move(E8, C8, CASTLE_QUEEN));
+            }
+        }
     }
 } 
