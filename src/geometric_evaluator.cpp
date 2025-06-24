@@ -19,6 +19,36 @@ Multivector2D GeometricEvaluator::calculate_piece_influence(PieceType piece, Squ
     }
 }
 
+Multivector2D GeometricEvaluator::evaluate_position(const Board& board) {
+    Multivector2D M_total;
+    
+    for (int piece_type = WP; piece_type <= BK; piece_type++) {
+        uint64_t piece_bitboard = board.bitboards[piece_type];
+        
+        while (piece_bitboard) {
+            int square_index = __builtin_ctzll(piece_bitboard);
+            Square square = static_cast<Square>(square_index);
+            
+            Piece piece = static_cast<Piece>(piece_type);
+            PieceType type = piece_to_type(piece);
+            float weight = get_piece_weight(piece);
+            
+            Multivector2D influence = calculate_piece_influence(type, square, board);
+            Multivector2D weighted_influence = influence * weight;
+            
+            M_total = M_total + weighted_influence;
+            
+            piece_bitboard &= piece_bitboard - 1;
+        }
+    }
+    
+    return M_total;
+}
+
+float GeometricEvaluator::get_final_score(const Multivector2D& m_total) {
+    return m_total.get_scalar();
+}
+
 Multivector2D GeometricEvaluator::calculate_pawn_influence(Square square, const Board& board) {
     Vector2D coords = square_to_coords(square);
     bool is_white = board.side_to_move;
@@ -131,5 +161,23 @@ PieceType GeometricEvaluator::piece_to_type(Piece piece) {
         case WQ: case BQ: return PieceType::QUEEN;
         case WK: case BK: return PieceType::KING;
         default: return PieceType::PAWN;
+    }
+}
+
+float GeometricEvaluator::get_piece_weight(Piece piece) {
+    switch (piece) {
+        case WP: return 1.0f;
+        case WN: return 3.0f;
+        case WB: return 3.0f;
+        case WR: return 5.0f;
+        case WQ: return 9.0f;
+        case WK: return 1000.0f;
+        case BP: return -1.0f;
+        case BN: return -3.0f;
+        case BB: return -3.0f;
+        case BR: return -5.0f;
+        case BQ: return -9.0f;
+        case BK: return -1000.0f;
+        default: return 0.0f;
     }
 } 
