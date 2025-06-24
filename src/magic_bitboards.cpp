@@ -32,15 +32,15 @@ uint64_t MagicBitboards::generate_blocker_mask(int square, bool is_rook) {
     int file = square % 8;
     
     if (is_rook) {
-        // Horizontal
+        // h
         for (int f = file + 1; f < 7; f++) mask |= 1ULL << (rank * 8 + f);
         for (int f = file - 1; f > 0; f--) mask |= 1ULL << (rank * 8 + f);
         
-        // Vertical
+        // v
         for (int r = rank + 1; r < 7; r++) mask |= 1ULL << (r * 8 + file);
         for (int r = rank - 1; r > 0; r--) mask |= 1ULL << (r * 8 + file);
     } else {
-        // Diagonais
+        // d
         for (int i = 1; i < 7; i++) {
             if (rank + i < 7 && file + i < 7) mask |= 1ULL << ((rank + i) * 8 + (file + i));
             if (rank + i < 7 && file - i > 0) mask |= 1ULL << ((rank + i) * 8 + (file - i));
