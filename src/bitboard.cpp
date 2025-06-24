@@ -121,6 +121,69 @@ void Board::load_fen(const std::string& fen_string) {
     update_occupancy();
 }
 
+std::string Board::to_fen_string() const {
+    std::string fen = "";
+    
+    for (int rank = 7; rank >= 0; rank--) {
+        int empty_count = 0;
+        for (int file = 0; file < 8; file++) {
+            Square square = static_cast<Square>(rank * 8 + file);
+            uint64_t square_bit = 1ULL << square;
+            
+            Piece piece = WP;
+            bool found = false;
+            for (int p = WP; p <= BK; p++) {
+                if (bitboards[p] & square_bit) {
+                    piece = static_cast<Piece>(p);
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (found) {
+                if (empty_count > 0) {
+                    fen += std::to_string(empty_count);
+                    empty_count = 0;
+                }
+                fen += piece_to_char(piece);
+            } else {
+                empty_count++;
+            }
+        }
+        
+        if (empty_count > 0) {
+            fen += std::to_string(empty_count);
+        }
+        
+        if (rank > 0) {
+            fen += "/";
+        }
+    }
+    
+    fen += side_to_move ? " w " : " b ";
+    
+    std::string castling_str = "";
+    if (castling_rights & 1) castling_str += "K";
+    if (castling_rights & 2) castling_str += "Q";
+    if (castling_rights & 4) castling_str += "k";
+    if (castling_rights & 8) castling_str += "q";
+    if (castling_str.empty()) castling_str = "-";
+    fen += castling_str + " ";
+    
+    if (en_passant_square != -1) {
+        int file = en_passant_square % 8;
+        int rank = en_passant_square / 8;
+        fen += static_cast<char>('a' + file);
+        fen += static_cast<char>('1' + rank);
+    } else {
+        fen += "-";
+    }
+    
+    fen += " 0 1";
+    
+    return fen;
+}
+
 void Board::update_occupancy() {
     white_pieces = 0ULL;
     black_pieces = 0ULL;

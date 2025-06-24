@@ -1,0 +1,135 @@
+{
+  "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "evaluation": {
+    "final_score": 0.125,
+    "m_total_magnitude": 15.832,
+    "components": {
+      "scalar": 0.125,
+      "vector": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "bivector": 12.75
+    }
+  },
+  "visualizations": {
+    "heatmap": [
+      {"square": "a1", "value": 0.2},
+      {"square": "b1", "value": 0.3},
+      {"square": "c1", "value": 0.4},
+      {"square": "d1", "value": 0.6},
+      {"square": "e1", "value": 0.8},
+      {"square": "f1", "value": 0.4},
+      {"square": "g1", "value": 0.3},
+      {"square": "h1", "value": 0.2},
+      {"square": "a2", "value": 0.1},
+      {"square": "b2", "value": 0.1},
+      {"square": "c2", "value": 0.1},
+      {"square": "d2", "value": 0.1},
+      {"square": "e2", "value": 0.1},
+      {"square": "f2", "value": 0.1},
+      {"square": "g2", "value": 0.1},
+      {"square": "h2", "value": 0.1},
+      {"square": "a3", "value": 0.05},
+      {"square": "b3", "value": 0.05},
+      {"square": "c3", "value": 0.05},
+      {"square": "d3", "value": 0.05},
+      {"square": "e3", "value": 0.05},
+      {"square": "f3", "value": 0.05},
+      {"square": "g3", "value": 0.05},
+      {"square": "h3", "value": 0.05},
+      {"square": "a4", "value": 0.0},
+      {"square": "b4", "value": 0.0},
+      {"square": "c4", "value": 0.0},
+      {"square": "d4", "value": 0.0},
+      {"square": "e4", "value": 0.0},
+      {"square": "f4", "value": 0.0},
+      {"square": "g4", "value": 0.0},
+      {"square": "h4", "value": 0.0},
+      {"square": "a5", "value": 0.0},
+      {"square": "b5", "value": 0.0},
+      {"square": "c5", "value": 0.0},
+      {"square": "d5", "value": 0.0},
+      {"square": "e5", "value": 0.0},
+      {"square": "f5", "value": 0.0},
+      {"square": "g5", "value": 0.0},
+      {"square": "h5", "value": 0.0},
+      {"square": "a6", "value": -0.05},
+      {"square": "b6", "value": -0.05},
+      {"square": "c6", "value": -0.05},
+      {"square": "d6", "value": -0.05},
+      {"square": "e6", "value": -0.05},
+      {"square": "f6", "value": -0.05},
+      {"square": "g6", "value": -0.05},
+      {"square": "h6", "value": -0.05},
+      {"square": "a7", "value": -0.1},
+      {"square": "b7", "value": -0.1},
+      {"square": "c7", "value": -0.1},
+      {"square": "d7", "value": -0.1},
+      {"square": "e7", "value": -0.1},
+      {"square": "f7", "value": -0.1},
+      {"square": "g7", "value": -0.1},
+      {"square": "h7", "value": -0.1},
+      {"square": "a8", "value": -0.2},
+      {"square": "b8", "value": -0.3},
+      {"square": "c8", "value": -0.4},
+      {"square": "d8", "value": -0.6},
+      {"square": "e8", "value": -0.8},
+      {"square": "f8", "value": -0.4},
+      {"square": "g8", "value": -0.3},
+      {"square": "h8", "value": -0.2}
+    ],
+    "bivectors": [
+      {
+        "piece": "wR-a1",
+        "strength": 0.857,
+        "path": ["a2", "a3", "a4", "a5", "a6", "a7", "b1", "c1", "d1", "e1", "f1", "g1", "h1"]
+      },
+      {
+        "piece": "wR-h1", 
+        "strength": 0.857,
+        "path": ["h2", "h3", "h4", "h5", "h6", "h7", "a1", "b1", "c1", "d1", "e1", "f1", "g1"]
+      },
+      {
+        "piece": "wB-c1",
+        "strength": 0.571,
+        "path": ["d2", "e3", "f4", "g5", "h6", "b2", "a3"]
+      },
+      {
+        "piece": "wB-f1",
+        "strength": 0.571,
+        "path": ["e2", "d3", "c4", "b5", "a6", "g2", "h3"]
+      },
+      {
+        "piece": "wQ-d1",
+        "strength": 1.286,
+        "path": ["d2", "d3", "d4", "d5", "d6", "d7", "a1", "b1", "c1", "e1", "f1", "g1", "h1", "c2", "b3", "a4", "e2", "f3", "g4", "h5"]
+      },
+      {
+        "piece": "bR-a8",
+        "strength": -0.857,
+        "path": ["a7", "a6", "a5", "a4", "a3", "a2", "b8", "c8", "d8", "e8", "f8", "g8", "h8"]
+      },
+      {
+        "piece": "bR-h8",
+        "strength": -0.857,
+        "path": ["h7", "h6", "h5", "h4", "h3", "h2", "a8", "b8", "c8", "d8", "e8", "f8", "g8"]
+      },
+      {
+        "piece": "bB-c8",
+        "strength": -0.571,
+        "path": ["d7", "e6", "f5", "g4", "h3", "b7", "a6"]
+      },
+      {
+        "piece": "bB-f8",
+        "strength": -0.571,
+        "path": ["e7", "d6", "c5", "b4", "a3", "g7", "h6"]
+      },
+      {
+        "piece": "bQ-d8",
+        "strength": -1.286,
+        "path": ["d7", "d6", "d5", "d4", "d3", "d2", "a8", "b8", "c8", "e8", "f8", "g8", "h8", "c7", "b6", "a5", "e7", "f6", "g5", "h4"]
+      }
+    ]
+  }
+} 

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Chess - Visualizador</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 50px;
+            background: linear-gradient(135deg, #ffffff 0%, #ff6b35 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #ff6b35;
+        }
+        
+        .upload-section {
+            background: #111111;
+            border: 1px solid #333333;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .file-input {
+            background: #1a1a1a;
+            border: 2px dashed #333333;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-input:hover {
+            border-color: #ff6b35;
+            background: #1f1f1f;
+        }
+        
+        .file-input p {
+            color: #888888;
+            font-size: 0.95rem;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 65px);
+            grid-template-rows: repeat(8, 65px);
+            gap: 1px;
+            margin: 30px auto;
+            border: 2px solid #333333;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .square {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 11px;
+            position: relative;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .square:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+        }
+        
+        .analysis-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .panel {
+            background: #111111;
+            border: 1px solid #333333;
+            border-radius: 12px;
+            padding: 25px;
+        }
+        
+        .component-bar {
+            background: #1a1a1a;
+            height: 35px;
+            margin: 15px 0;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #333333;
+        }
+        
+        .component-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.6s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .bivector-item {
+            background: #1a1a1a;
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ff6b35;
+            border: 1px solid #333333;
+        }
+        
+        .btn {
+            background: transparent;
+            color: #ffffff;
+            border: 2px solid #ff6b35;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .btn:hover {
+            background: #ff6b35;
+            color: #000000;
+            transform: translateY(-1px);
+        }
+
+        #fen-display {
+            text-align: center;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 30px 0;
+            padding: 15px;
+            background: #111111;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            color: #cccccc;
+        }
+
+        /* Cores específicas para componentes */
+        .scalar-bar { background: #ff6b35; }
+        .vector-x-bar { background: #ffffff; color: #000000; }
+        .vector-y-bar { background: #cccccc; color: #000000; }
+        .bivector-bar { background: linear-gradient(90deg, #ff6b35, #ff8c35); }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .board {
+                grid-template-columns: repeat(8, 45px);
+                grid-template-rows: repeat(8, 45px);
+            }
+            
+            .analysis-panel {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        /* Scrollbar customizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ff6b35;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff8c35;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quantum Chess</h1>
+        
+        <div class="upload-section">
+            <h3>Carregar Análise JSON</h3>
+            <div class="file-input" onclick="document.getElementById('jsonFile').click()">
+                <p>📁 Clique para selecionar arquivo JSON de análise</p>
+                <input type="file" id="jsonFile" accept=".json" onchange="carregarAnalise(this)">
+            </div>
+            <div>
+                <button class="btn" onclick="carregarExemplo('inicial')">Posição Inicial</button>
+                <button class="btn" onclick="carregarExemplo('italiana')">Abertura Italiana</button>
+                <button class="btn" onclick="carregarExemplo('meio_jogo')">Meio-jogo</button>
+                <button class="btn" onclick="carregarExemplo('final')">Final Torres</button>
+            </div>
+        </div>
+        
+        <div id="fen-display"></div>
+        
+        <div class="board" id="chessboard"></div>
+        
+        <div class="analysis-panel">
+            <div class="panel">
+                <h3>📊 Componentes do Multivetor</h3>
+                <div id="components"></div>
+            </div>
+            
+            <div class="panel">
+                <h3>🎯 Avaliação</h3>
+                <div id="evaluation"></div>
+            </div>
+            
+            <div class="panel">
+                <h3>⚡ Bivetores</h3>
+                <div id="bivectors"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let analiseAtual = null;
+
+        function inicializarTabuleiro() {
+            const board = document.getElementById('chessboard');
+            board.innerHTML = '';
+            
+            for (let rank = 7; rank >= 0; rank--) {
+                for (let file = 0; file < 8; file++) {
+                    const square = document.createElement('div');
+                    square.className = 'square';
+                    square.id = `${String.fromCharCode(97 + file)}${rank + 1}`;
+                    
+                    const isLight = (rank + file) % 2 === 0;
+                    square.style.backgroundColor = isLight ? '#f5f5f5' : '#333333';
+                    square.style.color = isLight ? '#000000' : '#ffffff';
+                    
+                    board.appendChild(square);
+                }
+            }
+        }
+
+        function atualizarHeatmap(heatmapData) {
+            heatmapData.forEach(data => {
+                const square = document.getElementById(data.square);
+                if (square) {
+                    const intensity = Math.abs(data.value);
+                    const isPositive = data.value >= 0;
+                    
+                    if (intensity > 0.01) {
+                        const color = isPositive ? 
+                            `rgba(255, 107, 53, ${intensity * 0.8})` : 
+                            `rgba(255, 255, 255, ${intensity * 0.6})`;
+                        
+                        square.style.backgroundColor = color;
+                        square.style.color = isPositive ? '#000000' : '#000000';
+                    }
+                    
+                    square.textContent = data.value.toFixed(2);
+                    square.title = `${data.square}: ${data.value.toFixed(3)}`;
+                }
+            });
+        }
+
+        function atualizarComponentes(components) {
+            const container = document.getElementById('components');
+            container.innerHTML = '';
+            
+            const componentData = [
+                { name: 'Escalar', value: components.scalar, className: 'scalar-bar' },
+                { name: 'Vetor X', value: components.vector.x, className: 'vector-x-bar' },
+                { name: 'Vetor Y', value: components.vector.y, className: 'vector-y-bar' },
+                { name: 'Bivetor', value: components.bivector, className: 'bivector-bar' }
+            ];
+            
+            const maxAbs = Math.max(...componentData.map(c => Math.abs(c.value)), 1);
+            
+            componentData.forEach(comp => {
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = `
+                    <div style="margin: 20px 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong>${comp.name}</strong>
+                            <span style="color: #ff6b35;">${comp.value.toFixed(3)}</span>
+                        </div>
+                        <div class="component-bar">
+                            <div class="component-fill ${comp.className}" 
+                                 style="width: ${(Math.abs(comp.value) / maxAbs) * 100}%">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(wrapper);
+            });
+        }
+
+        function atualizarAvaliacao(evaluation) {
+            const container = document.getElementById('evaluation');
+            const isPositive = evaluation.final_score >= 0;
+            
+            container.innerHTML = `
+                <div style="margin-bottom: 25px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <strong>Score Final:</strong>
+                        <span style="color: ${isPositive ? '#ff6b35' : '#ffffff'}; font-weight: 600;">
+                            ${evaluation.final_score.toFixed(3)}
+                        </span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Magnitude Total:</strong>
+                        <span style="color: #ff6b35;">${evaluation.m_total_magnitude.toFixed(3)}</span>
+                    </div>
+                </div>
+                <div style="background: #1a1a1a; height: 25px; border-radius: 6px; overflow: hidden; border: 1px solid #333;">
+                    <div style="width: ${Math.min(Math.abs(evaluation.final_score) * 20, 100)}%; 
+                                height: 100%; 
+                                background: ${isPositive ? '#ff6b35' : '#ffffff'}; 
+                                transition: width 0.6s ease;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: ${isPositive ? '#000' : '#000'};
+                                font-weight: 600;
+                                font-size: 0.8rem;">
+                        ${Math.abs(evaluation.final_score) > 0.1 ? evaluation.final_score.toFixed(2) : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function atualizarBivetores(bivectors) {
+            const container = document.getElementById('bivectors');
+            container.innerHTML = '';
+            
+            if (bivectors.length === 0) {
+                container.innerHTML = '<p style="color: #888;">Nenhum bivetor significativo encontrado.</p>';
+                return;
+            }
+            
+            bivectors.forEach(bv => {
+                const item = document.createElement('div');
+                item.className = 'bivector-item';
+                item.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: #ffffff;">${bv.piece}</strong>
+                        <span style="color: #ff6b35; font-weight: 600;">${bv.strength.toFixed(3)}</span>
+                    </div>
+                    <div style="margin-top: 8px; color: #cccccc; font-size: 0.9rem;">
+                        Casas controladas: ${bv.path.length}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function carregarAnalise(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    analiseAtual = JSON.parse(e.target.result);
+                    atualizarVisualizacao();
+                } catch (error) {
+                    alert('Erro ao ler arquivo JSON: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function carregarExemplo(tipo) {
+            const exemplos = {
+                inicial: {
+                    fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                    evaluation: {
+                        final_score: 0.0,
+                        m_total_magnitude: 12.5,
+                        components: {
+                            scalar: 0.0,
+                            vector: { x: 0.0, y: 0.0 },
+                            bivector: 8.5
+                        }
+                    },
+                    visualizations: {
+                        heatmap: generateExampleHeatmap(),
+                        bivectors: [
+                            { piece: "wR-a1", strength: 0.8, path: ["a2", "a3", "a4"] },
+                            { piece: "bR-a8", strength: 0.8, path: ["a7", "a6", "a5"] }
+                        ]
+                    }
+                }
+            };
+            
+            analiseAtual = exemplos[tipo] || exemplos.inicial;
+            atualizarVisualizacao();
+        }
+
+        function generateExampleHeatmap() {
+            const heatmap = [];
+            for (let file = 0; file < 8; file++) {
+                for (let rank = 0; rank < 8; rank++) {
+                    const square = String.fromCharCode(97 + file) + (rank + 1);
+                    const value = (Math.random() - 0.5) * 2;
+                    heatmap.push({ square, value });
+                }
+            }
+            return heatmap;
+        }
+
+        function atualizarVisualizacao() {
+            if (!analiseAtual) return;
+            
+            document.getElementById('fen-display').textContent = 
+                `FEN: ${analiseAtual.fen}`;
+            
+            atualizarHeatmap(analiseAtual.visualizations.heatmap);
+            atualizarComponentes(analiseAtual.evaluation.components);
+            atualizarAvaliacao(analiseAtual.evaluation);
+            atualizarBivetores(analiseAtual.visualizations.bivectors);
+        }
+
+        window.onload = function() {
+            inicializarTabuleiro();
+            carregarExemplo('inicial');
+        };
+    </script>
+</body>
+</html> 

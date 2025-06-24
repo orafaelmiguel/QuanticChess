@@ -31,7 +31,13 @@ FetchContent_Declare(
     GIT_TAG v2.2.0
 )
 
-FetchContent_MakeAvailable(klein)
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+)
+
+FetchContent_MakeAvailable(klein nlohmann_json)
 
 include_directories(include)
 
@@ -44,7 +50,7 @@ add_executable(quantum_chess ${SOURCES} ${HEADERS})
 
 # Specific configurations for the executable
 target_include_directories(quantum_chess PRIVATE include)
-target_link_libraries(quantum_chess PRIVATE klein::klein)
+target_link_libraries(quantum_chess PRIVATE klein::klein nlohmann_json::nlohmann_json)
 
 # Enable tests if requested
 option(BUILD_TESTS "Build tests" OFF)

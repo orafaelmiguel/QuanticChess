@@ -14,6 +14,7 @@ public:
     static Multivector2D calculate_piece_influence(PieceType piece, Square square, const Board& board);
     static Multivector2D evaluate_position(const Board& board);
     static float get_final_score(const Multivector2D& m_total);
+    static PieceType piece_to_type(Piece piece);
     
 private:
     static Multivector2D calculate_pawn_influence(Square square, const Board& board);
@@ -25,7 +26,6 @@ private:
     
     static int popcount(uint64_t bitboard);
     static Vector2D square_to_coords(Square square);
-    static PieceType piece_to_type(Piece piece);
     static float get_piece_weight(Piece piece);
 };
 

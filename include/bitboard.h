@@ -61,6 +61,7 @@ public:
     void clear_board();
     void update_occupancy();
     Square string_to_square(const std::string& square_str);
+    std::string to_fen_string() const;
     void generate_pawn_moves(MoveList& move_list);
     void generate_knight_moves(MoveList& move_list);
     void generate_king_moves(MoveList& move_list);
